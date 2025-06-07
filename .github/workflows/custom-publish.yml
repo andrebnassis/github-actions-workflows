@@ -21,15 +21,18 @@ jobs:
       - name: Set Git remote with PAT
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
+        run: |-
+          set -euo pipefail
           git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/${{ github.repository }}
 
       - name: Update manifest.json version
-        run: |
+        run: |-
+          set -euo pipefail
           jq --arg version "${{ github.event.inputs.version }}" '.version = $version' manifest.json > tmp.json && mv tmp.json manifest.json
 
       - name: Prepare upload folder excluding files from .compact-ignore
-        run: |
+        run: |-
+          set -euo pipefail
           if [ ! -f .compact-ignore ]; then
             echo ".compact-ignore not found, creating an empty one."
             touch .compact-ignore
@@ -39,7 +42,8 @@ jobs:
           rsync -av --exclude-from='.compact-ignore' ./ upload-folder/ --exclude=upload-folder
 
       - name: Commit updated manifest.json (if changed)
-        run: |
+        run: |-
+          set -euo pipefail
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add manifest.json
@@ -50,7 +54,8 @@ jobs:
             echo "No changes to commit."
 
       - name: Create Git tag
-        run: |
+        run: |-
+          set -euo pipefail
           TAG=${{ github.event.inputs.version }}
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG already exists, skipping tag creation."
@@ -60,7 +65,8 @@ jobs:
           fi
 
       - name: Create ZIP archive with version name
-        run: |
+        run: |-
+          set -euo pipefail
           cd upload-folder
           zip -r ../${{ github.event.inputs.version }}.zip ./*
           cd ..
