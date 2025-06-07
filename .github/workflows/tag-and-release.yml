@@ -85,7 +85,8 @@ jobs:
           fi
           rm -rf upload-folder
           mkdir upload-folder
-          rsync -av --exclude-from='.compact-ignore' ./ upload-folder/
+          # Copia tudo, exceto o que está listado em .compact-ignore, sem o ./ que pode confundir os padrões
+          rsync -av --exclude-from='.compact-ignore' ./* upload-folder/
 
       - name: Commit updated manifest.json (if changed)
         run: |

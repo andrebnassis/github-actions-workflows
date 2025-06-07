@@ -58,14 +58,6 @@ jobs:
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Delete existing preview artifact (if any)
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: preview-pr-${{ github.event.pull_request.number }}
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Prepare upload folder excluding files from .compact-ignore
         run: |
           if [ ! -f .compact-ignore ]; then
