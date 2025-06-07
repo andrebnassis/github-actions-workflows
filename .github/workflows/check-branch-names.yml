@@ -1,26 +1,27 @@
 name: Enforce Branch Naming
 
 on:
-  create:
-    branches:
-      - '*'
   push:
     branches:
-      - '*'
+      - '**'              # include all branches
+      - '!master'         # exclude master
+      - '!feature/**'     # exclude feature/*
+      - '!bugfix/**'      # exclude bugfix/*
+      - '!release/**'     # exclude release/*
+  pull_request:
+    branches:
+      - '**'
+      - '!master'
+      - '!feature/**'
+      - '!bugfix/**'
+      - '!release/**'
 
 jobs:
-  check-branch-name:
+  fail-on-unexpected-branch:
     runs-on: ubuntu-latest
-    if: >
-      github.ref != 'refs/heads/master' &&
-      !startsWith(github.ref, 'refs/heads/feature/') &&
-      !startsWith(github.ref, 'refs/heads/bugfix/') &&
-      !startsWith(github.ref, 'refs/heads/release/')
     steps:
-      - name: Fail on invalid branch names
+      - name: Fail the workflow due to unexpected branch name
         run: |
-          BRANCH="${GITHUB_REF#refs/heads/}"
-          if [[ ! "$BRANCH" =~ ^(bugfix/|feature/|release/) ]]; then
-            echo "❌ Branch name '$BRANCH' is not allowed. Use bugfix/, feature/, or release/."
-            exit 1
-          fi
+          echo "❌ Branch '${GITHUB_REF#refs/heads/}' is not allowed."
+          echo "✅ Only 'feature/', 'bugfix/' and 'release/'  are allowed."
+          exit 1
