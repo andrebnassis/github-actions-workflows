@@ -61,7 +61,7 @@ jobs:
             echo ".compact-ignore not found, creating an empty one."
             touch .compact-ignore
           fi
-          zip -r "${{ steps.version.outputs.suffix }}.zip" . -x@.compact-ignore
+          zip -r "${{ steps.version.outputs.suffix }}.zip" . -x@.compact-ignore -x "${{ steps.version.outputs.suffix }}.zip"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
