@@ -2,8 +2,7 @@ name: Pull Request Preview Artifact
 
 on:
   pull_request:
-    branches:
-      - master
+    types: [opened, synchronize, reopened]
 
 permissions:
   actions: write
@@ -11,7 +10,10 @@ permissions:
 
 jobs:
   build-preview:
-    if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'bugfix/') || startsWith(github.head_ref, 'release/')
+    if: >
+      startsWith(github.head_ref, 'feature/') ||
+      startsWith(github.head_ref, 'bugfix/') ||
+      startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-latest
 
     steps:
