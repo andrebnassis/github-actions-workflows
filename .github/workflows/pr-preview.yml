@@ -70,9 +70,3 @@ jobs:
         with:
           name: ${{ steps.version.outputs.suffix }}
           path: upload-folder
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.version.outputs.suffix }}
-          path: upload-folder
