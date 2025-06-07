@@ -11,6 +11,11 @@ on:
 jobs:
   check-branch-name:
     runs-on: ubuntu-latest
+    if: >
+      github.ref != 'refs/heads/master' &&
+      !startsWith(github.ref, 'refs/heads/feature/') &&
+      !startsWith(github.ref, 'refs/heads/bugfix/') &&
+      !startsWith(github.ref, 'refs/heads/release/')
     steps:
       - name: Fail on invalid branch names
         run: |
