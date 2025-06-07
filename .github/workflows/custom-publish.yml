@@ -15,6 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false  # Impede conflitos com o uso do PAT manual
 
       - name: Set Git remote with PAT
@@ -27,13 +28,15 @@ jobs:
         run: |
           jq --arg version "${{ github.event.inputs.version }}" '.version = $version' manifest.json > tmp.json && mv tmp.json manifest.json
 
-      - name: Read .compact-ignore and zip files
+      - name: Prepare upload folder excluding files from .compact-ignore
         run: |
           if [ ! -f .compact-ignore ]; then
             echo ".compact-ignore not found, creating an empty one."
             touch .compact-ignore
           fi
-          zip -r release.zip . -x@.compact-ignore
+          rm -rf upload-folder
+          mkdir upload-folder
+          rsync -av --exclude-from='.compact-ignore' ./ upload-folder/
 
       - name: Commit updated manifest.json (if changed)
         run: |
@@ -49,14 +52,18 @@ jobs:
 
       - name: Create Tag
         run: |
-          git tag ${{ github.event.inputs.version }}
-          git push origin refs/tags/${{ github.event.inputs.version }}
+          TAG=${{ github.event.inputs.version }}
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping tag creation."
+          else
+            git tag "$TAG"
+            git push origin refs/tags/"$TAG"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
-          files: release.zip
+          files: upload-folder
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-          

@@ -70,24 +70,45 @@ Scheduled to run every Sunday at 03:00 AM (UTC) or manually.
 
 ## 📁 Installation Guide
 
-1. Download and extract the workflow files into your repository:
+1. **Download and extract the workflow files into your repository**:
    ```
    .github/workflows/
    ```
 
-2. Create a `.compact-ignore` file in your repository root:
+2. **Create a `.compact-ignore` file in your repository root** (with patterns to exclude from your ZIP/release):
    ```
    .gitignore
    afile.js
    src/another/file/toignore.html
    ```
 
-3. Configure `branch protection rules` in your GitHub repository settings:
+3. **Configure `branch protection rules` in your GitHub repository settings**:
    - Protect the `master` branch
    - Require pull requests before merging
    - Prevent direct pushes
 
-4. Commit the workflows and push to your repository:
+4. **Create a Personal Access Token (`PAT_TOKEN`)** with full repository permissions:
+
+   🔐 This is necessary for the workflow to push commits and tags via GitHub Actions.
+
+   ### Step-by-step to create the PAT:
+
+   1. Go to your GitHub profile: [https://github.com/settings/tokens](https://github.com/settings/tokens)
+   2. Click on **"Fine-grained tokens"** or **"Classic tokens"** (classic is simpler and sufficient).
+   3. Click **"Generate new token"**:
+      - **Token name**: `workflow-push-token` (or anything you prefer)
+      - **Expiration**: Choose an appropriate expiration date or "No expiration" for long-term use
+      - **Select scopes**:
+        - ✅ `repo` (Full control of private repositories)
+        - ✅ `workflow` (if interacting with workflows via API)
+   4. Click **"Generate token"** and **copy it**. ⚠️ You will not be able to see it again!
+   5. Go to your repository:
+      - Acesse **Settings > Secrets and variables > Actions > New repository secret**
+      - **Name**: `PAT_TOKEN`
+      - **Value**: paste your generated token
+      - Save
+
+5. **Commit the workflows and push to your repository**:
    ```bash
    git add .github/workflows .compact-ignore
    git commit -m "Add GitHub Actions release workflow v3"

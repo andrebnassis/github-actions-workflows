@@ -6,5 +6,6 @@
 README.md
 
 # Ignore specific files
-file-to-be-excluded-from-compact.js
+file-to-be-excluded-from-compact-01.js
 src/file-to-be-excluded-from-compact-02.js
+src/another-folder-level/file-to-be-excluded-from-compact-02

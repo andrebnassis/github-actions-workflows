@@ -26,7 +26,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          persist-credentials: false  # 🔧 evita conflito com GITHUB_TOKEN
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set Git remote with PAT
         env:
@@ -76,13 +77,15 @@ jobs:
           TAG=${{ steps.new_version.outputs.tag }}
           jq --arg version "$TAG" '.version = $version' manifest.json > tmp.json && mv tmp.json manifest.json
 
-      - name: Read .compact-ignore and zip files
+      - name: Prepare upload folder excluding files from .compact-ignore
         run: |
           if [ ! -f .compact-ignore ]; then
             echo ".compact-ignore not found, creating an empty one."
             touch .compact-ignore
           fi
-          zip -r release.zip . -x@.compact-ignore
+          rm -rf upload-folder
+          mkdir upload-folder
+          rsync -av --exclude-from='.compact-ignore' ./ upload-folder/
 
       - name: Commit updated manifest.json (if changed)
         run: |
@@ -91,20 +94,25 @@ jobs:
           git add manifest.json
           if ! git diff --cached --quiet; then
             git commit -m "chore: update version to ${{ steps.new_version.outputs.tag }}"
-            git push origin HEAD:master
+            git push origin HEAD:${{ github.ref_name }}
           else
             echo "No changes to commit."
           fi
 
       - name: Create Tag
         run: |
-          git tag ${{ steps.new_version.outputs.tag }}
-          git push origin refs/tags/${{ steps.new_version.outputs.tag }}
+          TAG=${{ steps.new_version.outputs.tag }}
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping tag creation."
+          else
+            git tag "$TAG"
+            git push origin refs/tags/"$TAG"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.new_version.outputs.tag }}
-          files: release.zip
+          files: upload-folder
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
