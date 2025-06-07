@@ -1,0 +1,85 @@
+name: Tag and Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  tag-and-release:
+    runs-on: ubuntu-latest
+    if: github.event.head_commit.message != 'skip-release'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get current version
+        id: get_version
+        run: |
+          CURRENT_TAG=$(git describe --tags --abbrev=0 || echo "0.0.0")
+          echo "Current tag: $CURRENT_TAG"
+          echo "::set-output name=current::$CURRENT_TAG"
+
+      - name: Determine new version
+        id: new_version
+        run: |
+          CURRENT=${{ steps.get_version.outputs.current }}
+          MAJOR=$(echo "$CURRENT" | cut -d. -f1)
+          MINOR=$(echo "$CURRENT" | cut -d. -f2)
+          PATCH=$(echo "$CURRENT" | cut -d. -f3)
+
+          if [[ "$GITHUB_HEAD_REF" == release/* ]]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [[ "$GITHUB_HEAD_REF" == feature/* ]]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [[ "$GITHUB_HEAD_REF" == bugfix/* ]]; then
+            PATCH=$((PATCH + 1))
+          else
+            echo "Unsupported branch type"
+            exit 1
+          fi
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "::set-output name=tag::$NEW_VERSION"
+
+      - name: Update manifest.json version
+        run: |
+          TAG=${{ steps.new_version.outputs.tag }}
+          jq --arg version "$TAG" '.version = $version' manifest.json > tmp.json && mv tmp.json manifest.json
+
+      - name: Create ZIP (exclude some files)
+        run: |
+          zip -r release.zip . -x .git\* .github\* afile.js src/another/file/toignore.html
+
+      - name: Read .compact-ignore and zip files
+        run: |
+          if [ ! -f .compact-ignore ]; then
+            echo ".compact-ignore not found, creating an empty one."
+            touch .compact-ignore
+          fi
+          zip -r release.zip . -x@.compact-ignore
+
+      - name: Commit updated manifest.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add manifest.json
+          git commit -m "chore: update version to ${{ steps.new_version.outputs.tag }}"
+          git push origin HEAD:master
+
+      - name: Create Tag
+        run: |
+          git tag ${{ steps.new_version.outputs.tag }}
+          git push origin ${{ steps.new_version.outputs.tag }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.new_version.outputs.tag }}
+          files: release.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

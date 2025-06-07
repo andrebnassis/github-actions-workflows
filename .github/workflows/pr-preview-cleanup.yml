@@ -1,0 +1,16 @@
+name: Cleanup PR Preview Artifact
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-preview:
+    if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'bugfix/') || startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete preview artifacts
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: preview-*

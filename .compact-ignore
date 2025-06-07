@@ -1,0 +1,10 @@
+# Ignore Git-related files and folders
+.git*
+.github*
+
+# Ignore documentation files
+README.md
+
+# Ignore specific files
+file-to-be-excluded-from-compact.js
+src/file-to-be-excluded-from-compact-02.js

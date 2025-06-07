@@ -1,0 +1,35 @@
+name: Pull Request Preview Artifact
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-preview:
+    if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'bugfix/') || startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine version suffix
+        id: version
+        run: |
+          VERSION=$(date +"%Y%m%d%H%M%S")
+          echo "::set-output name=suffix::preview-${VERSION}-b"
+
+      - name: Read .compact-ignore and zip files
+        run: |
+          if [ ! -f .compact-ignore ]; then
+            echo ".compact-ignore not found, creating an empty one."
+            touch .compact-ignore
+          fi
+          zip -r release.zip . -x@.compact-ignore
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.suffix }}
+          path: ${{ steps.version.outputs.suffix }}.zip

@@ -1,0 +1,18 @@
+name: Cleanup Orphan Preview Artifacts
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete old preview artifacts
+        uses: c-hive/gha-remove-artifacts@v1
+        with:
+          age: '3 days'
+          name: preview-*
+          token: ${{ secrets.GITHUB_TOKEN }}
