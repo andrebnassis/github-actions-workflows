@@ -85,8 +85,13 @@ jobs:
           fi
           rm -rf upload-folder
           mkdir upload-folder
-          # Copia tudo, exceto o que está listado em .compact-ignore, sem o ./ que pode confundir os padrões
-          rsync -av --exclude-from='.compact-ignore' ./* upload-folder/
+          rsync -av --exclude-from='.compact-ignore' ./ upload-folder/ --exclude=upload-folder
+
+      - name: Create ZIP archive excluding files from .compact-ignore
+        run: |
+          cd upload-folder
+          zip -r ../${{ steps.new_version.outputs.tag }}.zip ./*
+          cd ..
 
       - name: Commit updated manifest.json (if changed)
         run: |
@@ -114,6 +119,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.new_version.outputs.tag }}
-          files: upload-folder
+          files: ${{ steps.new_version.outputs.tag }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
