@@ -90,7 +90,7 @@ jobs:
       - name: Create ZIP archive excluding files from .compact-ignore
         run: |
           cd upload-folder
-          zip -r ../${{ steps.new_version.outputs.tag }}.zip ./*
+          zip -r ../${{ steps.new_version.outputs.tag }}.zip ./* -x ".compact-ignore"
           cd ..
 
       - name: Commit updated manifest.json (if changed)
