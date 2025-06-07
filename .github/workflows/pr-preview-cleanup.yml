@@ -6,9 +6,8 @@ on:
 
 jobs:
   delete-preview:
-    if: |
-      github.event.pull_request.merged == true || github.event.pull_request.state == 'closed'
-      &&
+    if: >
+      (github.event.pull_request.merged == true || github.event.pull_request.state == 'closed') &&
       (
         startsWith(github.event.pull_request.head.ref, 'feature/') ||
         startsWith(github.event.pull_request.head.ref, 'bugfix/') ||
