@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   build-preview:
     if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'bugfix/') || startsWith(github.head_ref, 'release/')
@@ -55,7 +59,7 @@ jobs:
       - name: Delete existing preview artifact (if any)
         uses: geekyeggo/delete-artifact@v2
         with:
-          name: preview-pr-${{ github.event.number }}
+          name: preview-pr-${{ github.event.pull_request.number }}
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,5 +77,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: preview-pr-${{ github.event.number }}
+          name: preview-pr-${{ github.event.pull_request.number }}
           path: upload-folder
