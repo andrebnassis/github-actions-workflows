@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
   "name": "Minimal Manifest",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A basic manifest sample"
 }
