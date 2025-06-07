@@ -27,13 +27,13 @@ jobs:
         run: |
           jq --arg version "${{ github.event.inputs.version }}" '.version = $version' manifest.json > tmp.json && mv tmp.json manifest.json
 
-      - name: Read .compact-ignore and zip files
+      - name: Read .compact-ignore and zip files with versioned name
         run: |
           if [ ! -f .compact-ignore ]; then
-            echo ".compact-ignore not found, creating an empty one."
+            echo ".compact-ignore not found, criando um vazio."
             touch .compact-ignore
           fi
-          zip -r release.zip . -x@.compact-ignore
+          zip -r ${{ github.event.inputs.version }}.zip . -x@.compact-ignore
 
       - name: Commit updated manifest.json (if changed)
         run: |
@@ -56,7 +56,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
-          files: release.zip
+          files: ${{ github.event.inputs.version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-          
