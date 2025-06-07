@@ -33,7 +33,7 @@ jobs:
             echo ".compact-ignore not found, creating an empty one."
             touch .compact-ignore
           fi
-          zip -r release.zip . -x@.compact-ignore
+          zip -r ${{ github.event.inputs.version }}.zip . -x@.compact-ignore
 
       - name: Commit updated manifest.json (if changed)
         run: |
