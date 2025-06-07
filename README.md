@@ -2,6 +2,8 @@
 
 This project provides a complete GitHub Actions pipeline for managing automatic versioning, previews for pull requests, and releases with ZIP artifacts. It is designed for repositories that need structured and secure release workflows.
 
+Github default behaviour: Users can always get the latest version at https://github.com/andrebnassis/github-actions-workflows/releases/latest
+
 ---
 
 ## 🧰 Workflows Included
@@ -37,15 +39,7 @@ Triggered on pull requests targeting the `master` branch from these branches:
 
 ---
 
-### 3. `pr-preview-cleanup.yml`
-Triggered when a pull request is **closed** (merged or canceled).
-
-**Actions:**
-- Automatically deletes the preview artifact (matching pattern `preview-*`) associated with the closed PR
-
----
-
-### 4. `custom-publish.yml`
+### 3. `custom-publish.yml`
 Manually triggered via GitHub Actions UI.
 
 **Inputs:**
@@ -59,12 +53,8 @@ Manually triggered via GitHub Actions UI.
 
 ---
 
-### 5. `cleanup-orphan-previews.yml`
-Scheduled to run every Sunday at 03:00 AM (UTC) or manually.
-
-**Actions:**
-- Deletes all preview artifacts (`preview-*`) older than **3 days**
-- Helps maintain a clean workspace by removing orphaned previews
+### 4. `check-branch-names.yml`
+Avoid user to work with unexpected branch names.
 
 ---
 
