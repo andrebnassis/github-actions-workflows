@@ -55,16 +55,24 @@ jobs:
 
           echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
 
-      - name: Read .compact-ignore and zip files with proper name
+      - name: Prepare upload folder excluding files from .compact-ignore
         run: |
           if [ ! -f .compact-ignore ]; then
             echo ".compact-ignore not found, creating an empty one."
             touch .compact-ignore
           fi
-          zip -r "${{ steps.version.outputs.suffix }}.zip" . -x@.compact-ignore -x "${{ steps.version.outputs.suffix }}.zip"
+          rm -rf upload-folder
+          mkdir upload-folder
+          rsync -av --exclude-from='.compact-ignore' ./ upload-folder/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.version.outputs.suffix }}
-          path: ${{ steps.version.outputs.suffix }}.zip
+          path: upload-folder
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.suffix }}
+          path: upload-folder
