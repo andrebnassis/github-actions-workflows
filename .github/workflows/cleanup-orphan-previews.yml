@@ -2,7 +2,7 @@ name: Cleanup Orphan Preview Artifacts
 
 on:
   schedule:
-    - cron: '0 3 * * 0'
+    - cron: '0 3 * * 0'   # Toda semana, domingo às 03:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -13,6 +13,6 @@ jobs:
       - name: Delete old preview artifacts
         uses: c-hive/gha-remove-artifacts@v1
         with:
-          age: '3 days'
-          name: preview-*
+          age: '3 days'               # Remove artefatos com mais de 3 dias
+          name: preview-*             # Artefatos que iniciam com 'preview-'
           token: ${{ secrets.GITHUB_TOKEN }}

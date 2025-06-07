@@ -6,7 +6,14 @@ on:
 
 jobs:
   delete-preview:
-    if: startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'bugfix/') || startsWith(github.head_ref, 'release/')
+    if: |
+      github.event.pull_request.merged == true || github.event.pull_request.state == 'closed'
+      &&
+      (
+        startsWith(github.event.pull_request.head.ref, 'feature/') ||
+        startsWith(github.event.pull_request.head.ref, 'bugfix/') ||
+        startsWith(github.event.pull_request.head.ref, 'release/')
+      )
     runs-on: ubuntu-latest
 
     steps:
@@ -14,3 +21,5 @@ jobs:
         uses: geekyeggo/delete-artifact@v2
         with:
           name: preview-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

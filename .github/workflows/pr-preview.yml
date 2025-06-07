@@ -18,7 +18,7 @@ jobs:
         id: version
         run: |
           VERSION=$(date +"%Y%m%d%H%M%S")
-          echo "::set-output name=suffix::preview-${VERSION}-b"
+          echo "suffix=preview-${VERSION}-b" >> $GITHUB_OUTPUT
 
       - name: Read .compact-ignore and zip files
         run: |
@@ -32,4 +32,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.version.outputs.suffix }}
-          path: ${{ steps.version.outputs.suffix }}.zip
+          path: release.zip
