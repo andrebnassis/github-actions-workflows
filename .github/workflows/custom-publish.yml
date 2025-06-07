@@ -15,8 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: false  # Impede conflitos com o uso do PAT manual
 
       - name: Set Git remote with PAT
         env:
@@ -28,50 +27,36 @@ jobs:
         run: |
           jq --arg version "${{ github.event.inputs.version }}" '.version = $version' manifest.json > tmp.json && mv tmp.json manifest.json
 
-      - name: Prepare upload folder excluding files from .compact-ignore
+      - name: Read .compact-ignore and zip files
         run: |
           if [ ! -f .compact-ignore ]; then
             echo ".compact-ignore not found, creating an empty one."
             touch .compact-ignore
           fi
-          rm -rf upload-folder
-          mkdir upload-folder
-          rsync -av --exclude-from='.compact-ignore' ./ upload-folder/ --exclude=upload-folder
-
-      - name: Create ZIP archive
-        run: |
-          cd upload-folder
-          zip -r ../${{ github.event.inputs.version }}.zip ./*
-          cd ..
+          zip -r release.zip . -x@.compact-ignore
 
       - name: Commit updated manifest.json (if changed)
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add manifest.json
-
           if ! git diff --cached --quiet; then
             git commit -m "chore: update version to ${{ github.event.inputs.version }}"
             git push origin HEAD:master
           else
             echo "No changes to commit."
+          fi
 
       - name: Create Tag
         run: |
-          TAG=${{ github.event.inputs.version }}
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists, skipping tag creation."
-          else
-            git tag "$TAG"
-            git push origin refs/tags/"$TAG"
-          fi
+          git tag ${{ github.event.inputs.version }}
+          git push origin refs/tags/${{ github.event.inputs.version }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
           files: ${{ github.event.inputs.version }}.zip
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           
