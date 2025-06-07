@@ -15,6 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false  # Impede conflitos com o uso do PAT manual
 
       - name: Set Git remote with PAT
@@ -49,8 +50,13 @@ jobs:
 
       - name: Create Tag
         run: |
-          git tag ${{ github.event.inputs.version }}
-          git push origin refs/tags/${{ github.event.inputs.version }}
+          TAG=${{ github.event.inputs.version }}
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping tag creation."
+          else
+            git tag "$TAG"
+            git push origin refs/tags/"$TAG"
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
