@@ -1,4 +1,4 @@
-name: Enforce Branch Naming
+name: Check Branch Naming
 
 on:
   push:
